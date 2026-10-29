@@ -1,0 +1,18 @@
+{
+  "_local_angles": {
+    "physical_lines": 26,
+    "nonblank_noncomment_lines": 21
+  },
+  "observe_spiceypy_et": {
+    "physical_lines": 37,
+    "nonblank_noncomment_lines": 31
+  },
+  "observations": {
+    "physical_lines": 24,
+    "nonblank_noncomment_lines": 23
+  },
+  "observe_utc": {
+    "physical_lines": 2,
+    "nonblank_noncomment_lines": 2
+  }
+}

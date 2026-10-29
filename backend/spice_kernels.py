@@ -50,17 +50,9 @@ def kernel_directory() -> Path:
 
 
 def load_spice_kernels() -> None:
-    from backend.setup_kernels import KERNELS
     with SPICE_LOCK:
-        directory = kernel_directory()
-        paths = [(directory / filename).resolve() for filename in KERNEL_FILES]
-        identities = {}
-        for path in paths:
-            try:
-                identities[path] = _identity(path)
-            except OSError as exc:
-                raise KernelError(f"Missing or unreadable SPICE kernel {path.name} in {directory}. See backend/kernels/README.md.") from exc
-            _verify_kernel(path, identities[path], KERNELS[path.name][1])
+        directory, identities = verified_kernel_set()
+        paths = list(identities)
 
         try:
             loaded = {Path(spiceypy.kdata(i, "ALL", fillen=4096)[0]).resolve()
@@ -86,3 +78,19 @@ def load_spice_kernels() -> None:
                 _loaded_paths[path] = identities[path]
         except (SpiceyError, OSError) as exc:
             raise KernelError(f"Could not load SPICE kernel set: {exc}") from exc
+
+
+def verified_kernel_set() -> tuple[Path, dict]:
+    """Authenticate the configured set without touching CSPICE global state."""
+    from backend.setup_kernels import KERNELS
+    directory = kernel_directory()
+    paths = [(directory / filename).resolve() for filename in KERNEL_FILES]
+    identities = {}
+    for path in paths:
+        try:
+            identities[path] = _identity(path)
+        except OSError as exc:
+            raise KernelError(f"Missing or unreadable SPICE kernel {path.name} in {directory}. See backend/kernels/README.md.") from exc
+        _verify_kernel(path, identities[path], KERNELS[path.name][1])
+
+    return directory, identities

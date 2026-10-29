@@ -1,0 +1,46 @@
+{
+  "base_commit": "902ee268a4aa3a46b355b73a80eb85be615a0ad4",
+  "upstream_pr8_fetched_head": "902ee268a4aa3a46b355b73a80eb85be615a0ad4",
+  "native_source_commit": "aef6b565773cf806be231df9e91086edc9f785c3",
+  "pypi_0_8_0_release_endpoint_status": 404,
+  "source_build_compiler": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "tests": {
+    "original_without_complete_dem": {
+      "passed": 183,
+      "failed": 6,
+      "skipped": 7
+    },
+    "original_with_dem_python314": {
+      "passed": 195,
+      "failed": 1,
+      "failure": "Python 3.14 accepts 24:00; original contract rejects it"
+    },
+    "integration_python314_spiceypy": {
+      "passed": 363,
+      "failed": 0
+    },
+    "integration_python314_siderust": {
+      "passed": 363,
+      "failed": 0
+    },
+    "integration_python311_spiceypy": {
+      "passed": 363,
+      "failed": 0
+    },
+    "integration_python311_siderust": {
+      "passed": 363,
+      "failed": 0
+    },
+    "dedicated_native_suite": {
+      "passed": 167,
+      "failed": 0
+    }
+  },
+  "real_uvicorn_smoke": "both engines passed all eight successful routes and naive timestamp rejection",
+  "datasets": "existing SHA-256 manifests verified; no binary datasets tracked",
+  "licensing": {
+    "fork_repository_license_metadata": null,
+    "siderust_package_license": "AGPL-3.0",
+    "original_code_relicensed": false
+  }
+}

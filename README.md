@@ -98,3 +98,14 @@ Open `http://127.0.0.1:8000/docs` to try the API. `/ready` verifies a real SPICE
 Frontend requests from `http://localhost:5173` and `http://127.0.0.1:5173` are allowed by default. For another frontend origin, set `CORS_ORIGINS` to a comma-separated list before starting the API. An empty value disables cross-origin access. Same-origin `/api` proxying also works.
 
 See [the frontend handoff](docs/backend-handoff.md), [API contract](docs/api.md), and [terrain source and limits](backend/terrain/README.md).
+
+## Optional Siderust evaluation
+
+The default astronomical engine remains SpiceyPy. The evaluation branch also
+supports `ASTRO_BACKEND=siderust` using native DE440 lunar observations while
+sharing the existing LOLA terrain and planning pipeline. Install the optional
+`requirements-siderust.txt` before selecting it. See
+[the evaluation report](docs/siderust-evaluation.md) for installation, measured
+parity and performance, time conventions, source-build requirements and licensing
+questions. Run `python -m examples.compare_siderust_spiceypy` after dataset setup
+for a real-data comparison; it fails explicitly if inputs are unavailable.

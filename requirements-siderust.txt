@@ -1,0 +1,5 @@
+# Temporary source build: PyPI 0.8.0 was unavailable at evaluation time.
+# This verified commit declares 0.8.0 and uses the native lunar SPICE API.
+# Requires Rust/Cargo; pip builds a local wheel. Baseline remains independent.
+siderust @ git+https://github.com/Siderust/siderust-py.git@aef6b565773cf806be231df9e91086edc9f785c3
+tempoch==0.5.0
