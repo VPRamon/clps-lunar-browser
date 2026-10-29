@@ -11,9 +11,6 @@ from urllib.request import Request, urlopen
 
 import certifi
 
-from backend.spice_kernels import kernel_directory
-
-
 BASE = "https://naif.jpl.nasa.gov/pub/naif/"
 KERNELS = {
     "naif0012.tls": ("generic_kernels/lsk/naif0012.tls", "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b"),
@@ -71,6 +68,8 @@ def setup_kernels(directory: Path, check_only: bool = False) -> None:
 
 
 def main():
+    from backend.spice_kernels import kernel_directory
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--directory", type=Path, default=kernel_directory())
     parser.add_argument("--check", action="store_true", help="verify without downloading")

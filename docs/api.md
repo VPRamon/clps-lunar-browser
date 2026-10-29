@@ -1,6 +1,6 @@
 # Shared API format
 
-All endpoints are GET requests. Latitude is planetocentric, -90..90°, and longitude is east-positive, -180..180°, in lunar `MOON_ME`. Timestamps must include a timezone; outputs use UTC. Azimuth is clockwise from north, and elevation is above the local radial tangent plane, in degrees.
+All endpoints are GET requests. Latitude is planetocentric, -90..90°, and longitude is east-positive, -180..180°, in lunar `MOON_ME`. Timestamps must include a timezone and normalize to 1972-01-01 UTC or later; outputs use UTC. Civil hours are 00–23; leap-second strings are unsupported. Azimuth is clockwise from north, and elevation is above the local radial tangent plane, in degrees.
 
 ## Endpoints
 
@@ -83,7 +83,8 @@ File identity includes change time and, for the global DEM, inode, so replacing 
 | Invalid coordinates, timestamp, range or sampling step | 422 |
 | Unknown named site | 404 |
 | Missing/corrupt kernels, global DEM, terrain profile or landing-site catalog | 503 |
-| SPICE calculation failure (including unsupported dates) | 502 |
+| Native SPICE calculation failure (including SPK/BPC coverage limits) | 502 |
+| Invalid civil timestamp or normalized UTC before 1972-01-01 | 422 |
 
 Local Vite origins `http://localhost:5173` and `http://127.0.0.1:5173` are allowed. Configure comma-separated `CORS_ORIGINS` before startup for other origins; an empty string disables CORS.
 

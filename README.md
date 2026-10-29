@@ -79,7 +79,7 @@ make ur own branch for your part and PR it into main when its ready. try not to 
 
 Sun/Earth directions, visibility windows, CLPS site lookup, terrain horizons, and planning summaries are implemented for named sites and any selected lunar coordinate. Terrain is enabled by default: Athena and Odysseus use detailed 20 m and 30 m LOLA profiles with global terrain extending the skyline to 300 km; other positions use global LOLA elevation data. Responses report unresolved accuracy rather than claiming survey certification. The display model and its illustrative lighting are separate from these calculations.
 
-From the repo root, with Python 3.11 or newer:
+From the repo root, with Python 3.11 or newer (tested on 3.11 and 3.14):
 
 ```sh
 python -m venv .venv
@@ -98,3 +98,10 @@ Open `http://127.0.0.1:8000/docs` to try the API. `/ready` verifies a real SPICE
 Frontend requests from `http://localhost:5173` and `http://127.0.0.1:5173` are allowed by default. For another frontend origin, set `CORS_ORIGINS` to a comma-separated list before starting the API. An empty value disables cross-origin access. Same-origin `/api` proxying also works.
 
 See [the frontend handoff](docs/backend-handoff.md), [API contract](docs/api.md), and [terrain source and limits](backend/terrain/README.md).
+
+The backend uses published `siderust==0.8.0` and `tempoch==0.5.0` wheels;
+no Rust build is needed on supported wheel platforms. Siderust owns geometric
+lunar observations; CLPS retains terrain processing and the existing API.
+UTC inputs start at 1972-01-01; finite kernel coverage is a separate constraint.
+See [native backend conventions and limits](docs/native-backend.md), including
+historical UTC and the licensing questions to resolve before wider distribution.

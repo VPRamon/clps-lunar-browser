@@ -8,14 +8,13 @@ from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pytest
-import spiceypy
 import tifffile
 from fastapi.testclient import TestClient
 
 from backend.app import app
 from backend.calculations.sun_earth import calculate_visibility, validate_coordinates
 from backend.landing_sites import get_landing_site, load_landing_sites
-from backend.spice_kernels import KERNEL_FILES, KernelError, SPICE_LOCK, kernel_directory
+from backend.spice_kernels import KERNEL_FILES, KernelError, kernel_directory, spice_context
 from backend.terrain import global_dem as dem_module
 from backend.terrain.horizon import HorizonError, load_profile
 
@@ -125,16 +124,13 @@ def test_dem_disappearing_during_checksum_is_unavailable(monkeypatch, tmp_path):
 
 
 @pytest.mark.skipif(not REAL_KERNELS, reason="real NAIF kernels not installed")
-@pytest.mark.parametrize("reset", ["all", "pool", "one"])
-def test_kernel_calculations_recover_after_external_unload(reset):
+def test_context_reused_across_observations_and_windows():
+    from backend.calculations.sun_earth import calculate_visibility_window
+    context = spice_context()
     original = calculate_visibility(20, 45, TIME)
-    with SPICE_LOCK:
-        if reset == "all":
-            spiceypy.kclear()
-        elif reset == "pool":
-            spiceypy.clpool()
-        else:
-            spiceypy.unload(str(kernel_directory()/"moon_de440_220930.tf"))
+    samples = calculate_visibility_window(20, 45, TIME, "2026-10-03T02:00:00Z")
+    assert spice_context() is context
+    assert samples[0]["sun"] == original["sun"]
     assert calculate_visibility(20, 45, TIME) == original
 
 
@@ -145,14 +141,15 @@ def test_changed_but_parseable_kernel_is_rejected_and_repaired_copy_recovers(mon
     directory.mkdir()
     for name in KERNEL_FILES:
         shutil.copyfile(original_directory/name, directory/name)
+    expected = calculate_visibility(0, 0, TIME)
+    monkeypatch.setenv("SPICE_KERNELS_DIR", str(directory))
+    assert calculate_visibility(0, 0, TIME) == expected
     pck = directory/"pck00011.tpc"
     original = pck.read_bytes()
     replacement = directory/"replacement"
     replacement.write_bytes(original.replace(b"1737.4", b"1738.4"))
     replacement.replace(pck)
     assert pck.read_bytes() != original
-    expected = calculate_visibility(0, 0, TIME)
-    monkeypatch.setenv("SPICE_KERNELS_DIR", str(directory))
     with pytest.raises(KernelError, match="checksum"):
         calculate_visibility(0, 0, TIME)
     replacement.write_bytes(original)

@@ -4,13 +4,19 @@ on:
   push:
     branches:
       - main
+      - suhas/backend
   pull_request:
     branches:
       - main
+      - suhas/backend
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python: ["3.11", "3.14"]
 
     steps:
       - name: checkout
@@ -19,12 +25,13 @@ jobs:
       - name: set up python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
 
       - name: install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --only-binary=:all: -r requirements.txt
+          python -c "import importlib.util; assert importlib.util.find_spec('spiceypy') is None"
 
       - name: download SPICE kernels
         run: |
