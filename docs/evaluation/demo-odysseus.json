@@ -1,0 +1,165 @@
+{
+  "versions": {
+    "siderust": "0.8.0",
+    "tempoch": "0.5.0",
+    "spiceypy": "8.3.0"
+  },
+  "site": {
+    "id": "odysseus-im1",
+    "name": "Odysseus landing site",
+    "latitude": -80.13,
+    "longitude": 1.44,
+    "coordinate_precision_degrees": 0.01,
+    "terrain_profile_required": true,
+    "mission": "IM-1 Odysseus",
+    "source": "https://www.nasa.gov/missions/lro/nasas-lro-images-intuitive-machines-odysseus-lander/"
+  },
+  "radius_m": 1739994.0740100509,
+  "frame": "MOON_ME_DE440_ME421",
+  "utc": "2026-10-03T18:00:00Z",
+  "exact_et_tdb_seconds": 844322469.182344,
+  "jd_tt": 2461317.250800741,
+  "kernels_sha256": {
+    "naif0012.tls": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
+    "de440s.bsp": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2",
+    "pck00011.tpc": "3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1",
+    "moon_pa_de440_200625.bpc": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f",
+    "moon_de440_220930.tf": "73eb6b216c06a27c3419c4cfeaded7ffce46a714e3d4f9f5142dda51c0710f76"
+  },
+  "spiceypy": {
+    "sun": {
+      "azimuth": 267.744599521803,
+      "elevation": 0.671304756076756,
+      "visible": true,
+      "range_km": 149665655.0425689
+    },
+    "earth": {
+      "azimuth": 0.36050583296307787,
+      "elevation": 14.391222202051406,
+      "visible": true,
+      "range_km": 369890.2122198693
+    }
+  },
+  "siderust_exact_et": {
+    "sun": {
+      "azimuth": 267.744599521803,
+      "elevation": 0.6713047560767554,
+      "visible": true,
+      "range_km": 149665655.0425689
+    },
+    "earth": {
+      "azimuth": 0.3605058329630772,
+      "elevation": 14.391222202051411,
+      "visible": true,
+      "range_km": 369890.21221986925
+    }
+  },
+  "exact_et_absolute_residuals": {
+    "sun": {
+      "azimuth_deg": 0.0,
+      "elevation_deg": 5.551115123125783e-16,
+      "range_km": 0.0
+    },
+    "earth": {
+      "azimuth_deg": 0.0,
+      "elevation_deg": 5.329070518200751e-15,
+      "range_km": 5.820766091346741e-11
+    }
+  },
+  "siderust_utc_tt": {
+    "sun": {
+      "azimuth": 267.7445995165171,
+      "elevation": 0.6713047551680048,
+      "visible": true,
+      "range_km": 149665655.04251316
+    },
+    "earth": {
+      "azimuth": 0.36050583340020537,
+      "elevation": 14.391222201541279,
+      "visible": true,
+      "range_km": 369890.2122203262
+    }
+  },
+  "utc_path_absolute_residuals": {
+    "sun": {
+      "azimuth_deg": 5.285926363285398e-09,
+      "elevation_deg": 9.087511854133368e-10,
+      "range_km": 5.5730342864990234e-05
+    },
+    "earth": {
+      "azimuth_deg": 4.3712589103961363e-10,
+      "elevation_deg": 5.101270517116063e-10,
+      "range_km": 4.568719305098057e-07
+    }
+  },
+  "terrain_result": {
+    "sun": {
+      "azimuth": 267.7445995165171,
+      "elevation": 0.6713047551680048,
+      "visible": false,
+      "range_km": 149665655.04251316,
+      "flat_visible": true,
+      "terrain_horizon": 1.55,
+      "terrain_clearance_deg": -0.8786952448319952,
+      "visibility_validation": "unvalidated",
+      "distant_raster_may_block": false
+    },
+    "earth": {
+      "azimuth": 0.36050583340020537,
+      "elevation": 14.391222201541279,
+      "visible": true,
+      "range_km": 369890.2122203262,
+      "flat_visible": true,
+      "terrain_horizon": 0.16035466916860597,
+      "terrain_clearance_deg": 14.230867532372672,
+      "visibility_validation": "unvalidated",
+      "distant_raster_may_block": false
+    },
+    "horizon_mode": "terrain",
+    "terrain": {
+      "site_id": "odysseus-im1",
+      "latitude": -80.13,
+      "longitude": 1.44,
+      "source": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_75S_30MPP_ADJ.TIF",
+      "source_frame": "MOON_ME_DE421",
+      "runtime_frame": "MOON_ME_DE440_ME421",
+      "datum_radius_m": 1737400.0,
+      "site_elevation_m": 2592.07401005085,
+      "observer_elevation_method": "bilinear pixel-centre interpolation",
+      "pixel_resolution_m": 30.0,
+      "max_distance_m": 300000,
+      "min_distance_m": 21.213203435596427,
+      "azimuth_step": 0.5,
+      "observer_height_m": 2,
+      "detailed_max_distance_m": 40000,
+      "outer_terrain": {
+        "source": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/ldem_64_uint.tif",
+        "pixel_resolution_m": 473.80235037733564,
+        "min_distance_m": 39664.971145106065,
+        "max_distance_m": 300000
+      },
+      "distant_terrain_ceiling_deg": -3.3905730840185617,
+      "distant_raster_bounded": true,
+      "accuracy": {
+        "status": "unvalidated",
+        "survey_grade": false,
+        "horizontal_error_m": null,
+        "vertical_error_m": null,
+        "horizon_error_deg": null,
+        "independent_control_points": 0,
+        "coordinate_rounding": {
+          "assumption": "rounded to nearest catalog increment; not measured position error",
+          "north_south_m": 151.6167521207474,
+          "east_west_m": 25.989123980138313
+        },
+        "limits": [
+          "terrain smaller than source cells may be unresolved",
+          "terrain inside min_distance_m is omitted",
+          "observer height is assumed, not measured",
+          "raster ceiling bounds represented distant cell heights only",
+          "source, registration and skyline errors have no validated absolute bound"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "site_epoch_radius_cases": 150,
+  "max_exact_et_absolute_residuals": {
+    "sun": {
+      "azimuth_deg": 5.684341886080802e-14,
+      "elevation_deg": 2.842170943040401e-14,
+      "range_km": 1.1920928955078125e-07
+    },
+    "earth": {
+      "azimuth_deg": 5.684341886080802e-14,
+      "elevation_deg": 1.4210854715202004e-13,
+      "range_km": 1.7462298274040222e-10
+    }
+  },
+  "time_models": [
+    {
+      "utc": "1961-01-01T00:00:00Z",
+      "tt_difference_seconds": -7.577186822891235,
+      "tdb_et_difference_seconds": -7.577192306518555
+    },
+    {
+      "utc": "1965-01-01T00:00:00Z",
+      "tt_difference_seconds": -5.459877848625183,
+      "tdb_et_difference_seconds": -5.45989203453064
+    },
+    {
+      "utc": "1972-07-01T00:00:00Z",
+      "tt_difference_seconds": 0.0,
+      "tdb_et_difference_seconds": -9.298324584960938e-06
+    },
+    {
+      "utc": "2000-01-01T12:00:00Z",
+      "tt_difference_seconds": 0.0,
+      "tdb_et_difference_seconds": -2.1932649900691104e-05
+    },
+    {
+      "utc": "2016-12-31T23:59:59Z",
+      "tt_difference_seconds": 0.0,
+      "tdb_et_difference_seconds": 9.357929229736328e-06
+    },
+    {
+      "utc": "2017-01-01T00:00:00Z",
+      "tt_difference_seconds": 0.0,
+      "tdb_et_difference_seconds": 3.8743019104003906e-05
+    },
+    {
+      "utc": "2026-10-03T18:00:00Z",
+      "tt_difference_seconds": 0.0,
+      "tdb_et_difference_seconds": 3.802776336669922e-05
+    },
+    {
+      "utc": "2149-01-01T00:00:00Z",
+      "tt_difference_seconds": 0.0,
+      "tdb_et_difference_seconds": 2.384185791015625e-05
+    }
+  ]
+}

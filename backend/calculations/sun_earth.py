@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import math
+import os
+import re
 
 import numpy as np
 import spiceypy
@@ -29,8 +31,11 @@ def validate_coordinates(latitude: float, longitude: float) -> tuple[float, floa
 
 def parse_utc_time(value: str) -> datetime:
     try:
+        # Python 3.14 accepts 24:00; retain the API's strict civil-hour contract.
+        if re.search(r"[Tt ]24(?::|00)", value):
+            raise ValueError("hour must be below 24")
         parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
-    except (AttributeError, ValueError) as exc:
+    except (AttributeError, TypeError, ValueError) as exc:
         raise ValueError("time must be an ISO 8601 timestamp with a timezone") from exc
 
     if parsed.tzinfo is None:
@@ -77,49 +82,26 @@ def calculate_visibility(latitude: float, longitude: float, utc_time: str,
     time = parse_utc_time(utc_time)
     output_time = time.isoformat().replace("+00:00", "Z")
 
-    with SPICE_LOCK:
-        load_spice_kernels()
-        try:
-            et = spiceypy.utc2et(output_time)
-            _, radii = spiceypy.bodvrd("MOON", "RADII", 3)
-            equatorial_radius = float(radii[0])
-            flattening = (equatorial_radius - float(radii[2])) / equatorial_radius
-            if observer_radius_m is None:
-                site_fixed = spiceypy.georec(
-                    math.radians(longitude), math.radians(latitude), 0.0, equatorial_radius, flattening
-                )
-            else:
-                # LOLA latitudes are planetocentric; match its radial observer exactly.
-                lat, lon = math.radians(latitude), math.radians(longitude)
-                site_fixed = observer_radius_m / 1000 * np.array([
-                    math.cos(lat) * math.cos(lon), math.cos(lat) * math.sin(lon), math.sin(lat)
-                ])
-
-            # SPICE rotates the surface point between the lunar fixed frame and inertial J2000.
-            fixed_to_j2000 = spiceypy.pxform(MOON_FRAME, "J2000", et)
-            j2000_to_fixed = spiceypy.pxform("J2000", MOON_FRAME, et)
-            site_j2000 = fixed_to_j2000 @ site_fixed
-
-            bodies = {}
-            for name, target in (("sun", "SUN"), ("earth", "EARTH")):
-                moon_to_body, _ = spiceypy.spkpos(target, et, "J2000", "NONE", "MOON")
-                body_from_site_fixed = j2000_to_fixed @ (moon_to_body - site_j2000)
-                azimuth, elevation = _local_angles(body_from_site_fixed, latitude, longitude)
-                bodies[name] = {
-                    "azimuth": azimuth,
-                    "elevation": elevation,
-                    "visible": elevation > 0,
-                }
-        except SpiceyError as exc:
-            raise SpiceCalculationError(f"SPICE could not calculate the Sun/Earth position: {exc}") from exc
+    engine = selected_backend()
+    if engine == "siderust":
+        from backend.calculations.siderust_backend import observe_utc
+        bodies = observe_utc(latitude, longitude, output_time, observer_radius_m)
+    else:
+        with SPICE_LOCK:
+            load_spice_kernels()
+            try:
+                et = spiceypy.utc2et(output_time)
+                bodies = observe_spiceypy_et(latitude, longitude, et, observer_radius_m)
+            except SpiceyError as exc:
+                raise SpiceCalculationError(f"SPICE could not calculate the Sun/Earth position: {exc}") from exc
 
     return {
         "site": None,
         "latitude": latitude,
         "longitude": longitude,
         "time": output_time,
-        "sun": bodies["sun"],
-        "earth": bodies["earth"],
+        "sun": {k: bodies["sun"][k] for k in ("azimuth", "elevation", "visible")},
+        "earth": {k: bodies["earth"][k] for k in ("azimuth", "elevation", "visible")},
     }
 
 
@@ -172,3 +154,50 @@ def validate_window_request(latitude: float, longitude: float, start: str, end: 
         raise ValueError(f"window exceeds {MAX_WINDOW_SAMPLES} samples")
 
     return start_time, end_time, step
+
+
+def selected_backend() -> str:
+    engine = os.environ.get("ASTRO_BACKEND", "spiceypy")
+    if engine not in ("spiceypy", "siderust"):
+        from backend.spice_kernels import KernelError
+        raise KernelError(f"Unknown ASTRO_BACKEND={engine!r}; choose spiceypy or siderust")
+    return engine
+
+
+def observe_spiceypy_et(latitude, longitude, et, observer_radius_m=None):
+    """Original geometry at exact ET, including range for scientific comparison.
+
+    Caller must hold SPICE_LOCK and load the configured kernels.
+    """
+    _, radii = spiceypy.bodvrd("MOON", "RADII", 3)
+    equatorial_radius = float(radii[0])
+    flattening = (equatorial_radius - float(radii[2])) / equatorial_radius
+    if observer_radius_m is None:
+        site_fixed = spiceypy.georec(
+            math.radians(longitude), math.radians(latitude), 0.0, equatorial_radius, flattening
+        )
+    else:
+        # LOLA latitudes are planetocentric; match its radial observer exactly.
+        lat, lon = math.radians(latitude), math.radians(longitude)
+        site_fixed = observer_radius_m / 1000 * np.array([
+            math.cos(lat) * math.cos(lon), math.cos(lat) * math.sin(lon), math.sin(lat)
+        ])
+
+    # SPICE rotates the surface point between the lunar fixed frame and inertial J2000.
+    fixed_to_j2000 = spiceypy.pxform(MOON_FRAME, "J2000", et)
+    j2000_to_fixed = spiceypy.pxform("J2000", MOON_FRAME, et)
+    site_j2000 = fixed_to_j2000 @ site_fixed
+
+    bodies = {}
+    for name, target in (("sun", "SUN"), ("earth", "EARTH")):
+        moon_to_body, _ = spiceypy.spkpos(target, et, "J2000", "NONE", "MOON")
+        body_from_site_fixed = j2000_to_fixed @ (moon_to_body - site_j2000)
+        azimuth, elevation = _local_angles(body_from_site_fixed, latitude, longitude)
+        bodies[name] = {
+            "azimuth": azimuth,
+            "elevation": elevation,
+            "visible": elevation > 0,
+            "range_km": float(np.linalg.norm(body_from_site_fixed)),
+        }
+
+    return bodies

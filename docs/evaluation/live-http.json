@@ -1,0 +1,200 @@
+{
+  "spiceypy": [
+    {
+      "path": "/ready",
+      "status": 200,
+      "latency_ms": 4005.902247001359,
+      "response_keys": [
+        "ok"
+      ]
+    },
+    {
+      "path": "/api/sites",
+      "status": 200,
+      "latency_ms": 43.05891200056067,
+      "response_keys": null
+    },
+    {
+      "path": "/api/sites/athena-im2/visibility",
+      "status": 200,
+      "latency_ms": 47.15542900157743,
+      "response_keys": [
+        "earth",
+        "horizon_mode",
+        "latitude",
+        "longitude",
+        "site",
+        "sun",
+        "terrain",
+        "time"
+      ]
+    },
+    {
+      "path": "/api/sites/odysseus-im1/visibility",
+      "status": 200,
+      "latency_ms": 44.81364399907761,
+      "response_keys": [
+        "earth",
+        "horizon_mode",
+        "latitude",
+        "longitude",
+        "site",
+        "sun",
+        "terrain",
+        "time"
+      ]
+    },
+    {
+      "path": "/api/visibility",
+      "status": 200,
+      "latency_ms": 378.2368639986089,
+      "response_keys": [
+        "earth",
+        "horizon_mode",
+        "latitude",
+        "longitude",
+        "site",
+        "sun",
+        "terrain",
+        "time"
+      ]
+    },
+    {
+      "path": "/api/sites/athena-im2/visibility/window",
+      "status": 200,
+      "latency_ms": 21.381073998782085,
+      "response_keys": null
+    },
+    {
+      "path": "/api/sites/athena-im2/summary",
+      "status": 200,
+      "latency_ms": 19.81829100259347,
+      "response_keys": [
+        "both_available_percent",
+        "earth_visible_percent",
+        "end",
+        "horizon_mode",
+        "latitude",
+        "longest_comm_blackout_minutes",
+        "longest_darkness_minutes",
+        "longitude",
+        "sampling",
+        "site",
+        "start",
+        "step_minutes",
+        "sunlight_percent",
+        "terrain",
+        "windows"
+      ]
+    },
+    {
+      "path": "/api/horizon",
+      "status": 200,
+      "latency_ms": 43.87288199723116,
+      "response_keys": [
+        "profile",
+        "site",
+        "terrain_available"
+      ]
+    }
+  ],
+  "siderust": [
+    {
+      "path": "/ready",
+      "status": 200,
+      "latency_ms": 3463.1061000000045,
+      "response_keys": [
+        "ok"
+      ]
+    },
+    {
+      "path": "/api/sites",
+      "status": 200,
+      "latency_ms": 43.94714400041266,
+      "response_keys": null
+    },
+    {
+      "path": "/api/sites/athena-im2/visibility",
+      "status": 200,
+      "latency_ms": 46.043189002375584,
+      "response_keys": [
+        "earth",
+        "horizon_mode",
+        "latitude",
+        "longitude",
+        "site",
+        "sun",
+        "terrain",
+        "time"
+      ]
+    },
+    {
+      "path": "/api/sites/odysseus-im1/visibility",
+      "status": 200,
+      "latency_ms": 43.9968120008416,
+      "response_keys": [
+        "earth",
+        "horizon_mode",
+        "latitude",
+        "longitude",
+        "site",
+        "sun",
+        "terrain",
+        "time"
+      ]
+    },
+    {
+      "path": "/api/visibility",
+      "status": 200,
+      "latency_ms": 387.80455899905064,
+      "response_keys": [
+        "earth",
+        "horizon_mode",
+        "latitude",
+        "longitude",
+        "site",
+        "sun",
+        "terrain",
+        "time"
+      ]
+    },
+    {
+      "path": "/api/sites/athena-im2/visibility/window",
+      "status": 200,
+      "latency_ms": 9.661151001637336,
+      "response_keys": null
+    },
+    {
+      "path": "/api/sites/athena-im2/summary",
+      "status": 200,
+      "latency_ms": 8.001384998351568,
+      "response_keys": [
+        "both_available_percent",
+        "earth_visible_percent",
+        "end",
+        "horizon_mode",
+        "latitude",
+        "longest_comm_blackout_minutes",
+        "longest_darkness_minutes",
+        "longitude",
+        "sampling",
+        "site",
+        "start",
+        "step_minutes",
+        "sunlight_percent",
+        "terrain",
+        "windows"
+      ]
+    },
+    {
+      "path": "/api/horizon",
+      "status": 200,
+      "latency_ms": 43.596101000730414,
+      "response_keys": [
+        "profile",
+        "site",
+        "terrain_available"
+      ]
+    }
+  ]
+}

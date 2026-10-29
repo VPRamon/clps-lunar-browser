@@ -1,0 +1,170 @@
+{
+  "versions": {
+    "siderust": "0.8.0",
+    "tempoch": "0.5.0",
+    "spiceypy": "8.3.0"
+  },
+  "site": {
+    "id": "athena-im2",
+    "name": "Athena landing site",
+    "latitude": -84.79,
+    "longitude": 29.2,
+    "coordinate_precision_degrees": 0.01,
+    "terrain_profile_required": true,
+    "mission": "IM-2 Athena",
+    "source": "https://pds.nasa.gov/ds-view/pds/viewContext.jsp?identifier=urn:nasa:pds:context:instrument_host:spacecraft.clps_to_prime1_athena&version=1.0"
+  },
+  "radius_m": 1742723.1906832207,
+  "frame": "MOON_ME_DE440_ME421",
+  "utc": "2026-10-03T18:00:00Z",
+  "exact_et_tdb_seconds": 844322469.182344,
+  "jd_tt": 2461317.250800741,
+  "kernels_sha256": {
+    "naif0012.tls": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
+    "de440s.bsp": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2",
+    "pck00011.tpc": "3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1",
+    "moon_pa_de440_200625.bpc": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f",
+    "moon_de440_220930.tf": "73eb6b216c06a27c3419c4cfeaded7ffce46a714e3d4f9f5142dda51c0710f76"
+  },
+  "spiceypy": {
+    "sun": {
+      "azimuth": 240.15271228406945,
+      "elevation": -1.5472039309658565,
+      "visible": false,
+      "range_km": 149665722.48311368
+    },
+    "earth": {
+      "azimuth": 332.28988826913286,
+      "elevation": 9.135460660272903,
+      "visible": true,
+      "range_km": 370045.8202863083
+    }
+  },
+  "siderust_exact_et": {
+    "sun": {
+      "azimuth": 240.15271228406945,
+      "elevation": -1.547203930965857,
+      "visible": false,
+      "range_km": 149665722.48311365
+    },
+    "earth": {
+      "azimuth": 332.28988826913286,
+      "elevation": 9.135460660272907,
+      "visible": true,
+      "range_km": 370045.8202863083
+    }
+  },
+  "exact_et_absolute_residuals": {
+    "sun": {
+      "azimuth_deg": 0.0,
+      "elevation_deg": 4.440892098500626e-16,
+      "range_km": 2.9802322387695312e-08
+    },
+    "earth": {
+      "azimuth_deg": 0.0,
+      "elevation_deg": 3.552713678800501e-15,
+      "range_km": 0.0
+    }
+  },
+  "siderust_utc_tt": {
+    "sun": {
+      "azimuth": 240.1527122787202,
+      "elevation": -1.5472039313782115,
+      "visible": false,
+      "range_km": 149665722.48305792
+    },
+    "earth": {
+      "azimuth": 332.28988826958357,
+      "elevation": 9.135460659781863,
+      "visible": true,
+      "range_km": 370045.8202867651
+    }
+  },
+  "utc_path_absolute_residuals": {
+    "sun": {
+      "azimuth_deg": 5.349249931896338e-09,
+      "elevation_deg": 4.12355039003387e-10,
+      "range_km": 5.576014518737793e-05
+    },
+    "earth": {
+      "azimuth_deg": 4.5071146814734675e-10,
+      "elevation_deg": 4.910400974722506e-10,
+      "range_km": 4.568137228488922e-07
+    }
+  },
+  "terrain_result": {
+    "sun": {
+      "azimuth": 240.1527122787202,
+      "elevation": -1.5472039313782115,
+      "visible": false,
+      "range_km": 149665722.48305792,
+      "flat_visible": false,
+      "terrain_horizon": 0.5436,
+      "terrain_clearance_deg": -2.0908039313782116,
+      "visibility_validation": "unvalidated",
+      "distant_raster_may_block": false
+    },
+    "earth": {
+      "azimuth": 332.28988826958357,
+      "elevation": 9.135460659781863,
+      "visible": true,
+      "range_km": 370045.8202867651,
+      "flat_visible": true,
+      "terrain_horizon": -1.3258599552056498,
+      "terrain_clearance_deg": 10.461320614987512,
+      "visibility_validation": "unvalidated",
+      "distant_raster_may_block": false
+    },
+    "horizon_mode": "terrain",
+    "terrain": {
+      "site_id": "athena-im2",
+      "latitude": -84.79,
+      "longitude": 29.2,
+      "source": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF",
+      "source_frame": "MOON_ME_DE421",
+      "runtime_frame": "MOON_ME_DE440_ME421",
+      "datum_radius_m": 1737400.0,
+      "site_elevation_m": 5321.190683220632,
+      "observer_elevation_method": "bilinear pixel-centre interpolation",
+      "pixel_resolution_m": 20.0,
+      "max_distance_m": 300000,
+      "min_distance_m": 14.142135623730951,
+      "azimuth_step": 0.5,
+      "observer_height_m": 2,
+      "detailed_max_distance_m": 40000,
+      "outer_terrain": {
+        "source": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/ldem_64_uint.tif",
+        "pixel_resolution_m": 473.80235037733564,
+        "min_distance_m": 39664.971145106065,
+        "max_distance_m": 300000
+      },
+      "distant_terrain_ceiling_deg": -3.909632099826109,
+      "distant_raster_bounded": true,
+      "accuracy": {
+        "status": "unvalidated",
+        "survey_grade": false,
+        "horizontal_error_m": null,
+        "vertical_error_m": null,
+        "horizon_error_deg": null,
+        "independent_control_points": 0,
+        "coordinate_rounding": {
+          "assumption": "rounded to nearest catalog increment; not measured position error",
+          "north_south_m": 151.6167521207474,
+          "east_west_m": 13.767770444221732
+        },
+        "limits": [
+          "terrain smaller than source cells may be unresolved",
+          "terrain inside min_distance_m is omitted",
+          "observer height is assumed, not measured",
+          "raster ceiling bounds represented distant cell heights only",
+          "source, registration and skyline errors have no validated absolute bound"
+        ]
+      },
+      "source_subset": {
+        "source_etag": "W/\"a0b2f283-189327867b8\"",
+        "retrieved_subset_sha256": "692143a3c54f0e8f54c94a9968efc03b728bbb01799da2a588db5fca7e026922",
+        "coverage": "only the requested polar preprocessing window is verified"
+      }
+    }
+  }
+}

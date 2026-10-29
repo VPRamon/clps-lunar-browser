@@ -103,3 +103,18 @@ All runtime profiles include `accuracy` with `status: "unvalidated"`, `survey_gr
 Terrain body records additionally include `terrain_clearance_deg`, `visibility_validation: "unvalidated"` and `distant_raster_may_block`. The existing `visible` Boolean remains a model prediction. `distant_terrain_ceiling_deg` bounds omitted distant cell centres from the pinned raster's maximum represented height, including range-edge overlap; `distant_raster_bounded` means that ceiling is below every skyline bin. It cannot certify unresolved terrain or source/position error. Do not interpret `distant_raster_may_block: false` as independently validated visibility.
 
 Independent-reference residual comparisons are available offline through `python -m backend.terrain.validate_accuracy`; see the terrain documentation for inputs, explicit tolerances and limits. No survey-grade certification is implied by passing tests or observed controls.
+
+## Astronomical engine selection (evaluation branch)
+
+Set `ASTRO_BACKEND=spiceypy` (default) or `ASTRO_BACKEND=siderust` before starting
+Uvicorn. Both engines preserve the response contract above and use the same
+terrain service. Invalid configuration or unavailable native bindings returns
+503; calculation/coverage failures return 502. No fallback occurs. Siderust uses
+aware UTC → tempoch TT Julian Date → native TDB observations. Its UTC path rejects
+dates before 1961 and differs from naif0012's historical UTC convention before
+1972; exact ET parity is tested separately. Both frozen leap-second models assume
+no additional leap seconds beyond their tables. Python's datetime parser rejects
+explicit leap-second timestamps. The authenticated PCK's lunar radii are equal,
+so its zero-height reference surface is the same 1737400 m radial sphere used by
+the native adapter; this equality must be rechecked before changing the kernel
+manifest. See [scientific conventions and results](siderust-evaluation.md).
