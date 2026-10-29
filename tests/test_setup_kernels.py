@@ -6,11 +6,13 @@ from urllib.error import URLError
 import pytest
 
 from backend.setup_kernels import KERNELS, setup_kernels
-from backend.spice_kernels import KERNEL_FILES
 
 
-def test_manifest_matches_runtime_kernel_set():
-    assert set(KERNELS) == set(KERNEL_FILES)
+def test_manifest_contains_the_documented_kernel_set():
+    assert set(KERNELS) == {
+        "naif0012.tls", "de440s.bsp", "pck00011.tpc",
+        "moon_pa_de440_200625.bpc", "moon_de440_220930.tf",
+    }
 
 
 def test_offline_verification_detects_corrupt_kernel(monkeypatch, tmp_path):

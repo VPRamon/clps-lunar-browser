@@ -2,6 +2,7 @@
 
 import argparse
 import hashlib
+import os
 from http.client import HTTPException
 from pathlib import Path
 import ssl
@@ -19,6 +20,13 @@ KERNELS = {
     "moon_pa_de440_200625.bpc": ("generic_kernels/pck/moon_pa_de440_200625.bpc", "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f"),
     "moon_de440_220930.tf": ("pds/pds4/clps/clps_spice/spice_kernels/fk/moon_de440_220930.tf", "73eb6b216c06a27c3419c4cfeaded7ffce46a714e3d4f9f5142dda51c0710f76"),
 }
+
+
+def kernel_directory() -> Path:
+    configured = os.environ.get("SPICE_KERNELS_DIR")
+    if configured:
+        return Path(configured).expanduser().resolve()
+    return Path(__file__).resolve().parent / "kernels"
 
 
 def file_hash(path: Path) -> str:
@@ -68,8 +76,6 @@ def setup_kernels(directory: Path, check_only: bool = False) -> None:
 
 
 def main():
-    from backend.spice_kernels import kernel_directory
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--directory", type=Path, default=kernel_directory())
     parser.add_argument("--check", action="store_true", help="verify without downloading")

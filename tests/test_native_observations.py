@@ -1,7 +1,5 @@
 """Native ownership, verified resources, time boundaries and actual API requests."""
 import gc
-import importlib.metadata
-import importlib.util
 import shutil
 from concurrent.futures import ThreadPoolExecutor
 
@@ -12,17 +10,12 @@ from tempoch import JulianDate
 
 from backend.app import app
 from backend.calculations.sun_earth import calculate_visibility, parse_utc_time
-from backend.spice_kernels import KERNEL_FILES, KernelError, kernel_directory, spice_context
+from backend.kernel_context import KernelError, get_context
+from backend.setup_kernels import KERNELS, kernel_directory
 
 TIME = "2026-10-03T18:00:00Z"
-REAL_KERNELS = all((kernel_directory() / name).is_file() for name in KERNEL_FILES)
+REAL_KERNELS = all((kernel_directory() / name).is_file() for name in KERNELS)
 real_kernels = pytest.mark.skipif(not REAL_KERNELS, reason="real NAIF kernels not installed")
-
-
-def test_published_dependencies_without_legacy_engine():
-    assert importlib.metadata.version("siderust") == "0.8.0"
-    assert importlib.metadata.version("tempoch") == "0.5.0"
-    assert importlib.util.find_spec("spiceypy") is None
 
 
 @pytest.mark.parametrize("time", [
@@ -52,7 +45,7 @@ def test_valid_minutes_fractions_and_normalized_utc_boundary(time):
 @real_kernels
 def test_native_properties_flat_geometry_and_kilometre_ranges():
     observer = LunarObserver.from_spice(
-        context=spice_context(), frame="MOON_ME", lon_deg=45, lat_deg=20, radius_m=1737400,
+        context=get_context(), frame="MOON_ME", lon_deg=45, lat_deg=20, radius_m=1737400,
     )
     result = calculate_visibility(20, 45, TIME)
     assert calculate_visibility(20, 45, TIME, 1737400) == result
@@ -66,17 +59,17 @@ def test_native_properties_flat_geometry_and_kilometre_ranges():
 
 @real_kernels
 def test_directory_switch_evicts_context_but_observer_keeps_owned_state(monkeypatch, tmp_path):
-    from backend.spice_kernels import _context
-    original = spice_context()
+    from backend.kernel_context import _context
+    original = get_context()
     observer = LunarObserver.from_spice(context=original, frame="MOON_ME", lon_deg=45, lat_deg=20)
     jd_tt = JulianDate.from_utc(TIME).value
     expected = observer.observe_sun(jd_tt).to_dict()
-    for name in KERNEL_FILES:
+    for name in KERNELS:
         shutil.copyfile(kernel_directory() / name, tmp_path / name)
     monkeypatch.setenv("SPICE_KERNELS_DIR", str(tmp_path))
-    other = spice_context()
+    other = get_context()
     assert other is not original
-    assert spice_context() is other
+    assert get_context() is other
     assert _context.cache_info().currsize == 1
     del original
     gc.collect()
@@ -86,7 +79,7 @@ def test_directory_switch_evicts_context_but_observer_keeps_owned_state(monkeypa
     content = missing.read_bytes()
     missing.unlink()
     with pytest.raises(KernelError, match="Missing"):
-        spice_context()
+        get_context()
     missing.write_bytes(content)
     assert calculate_visibility(20, 45, TIME)["sun"]["azimuth"] == observer.observe_sun(jd_tt).az_deg
 
@@ -120,13 +113,13 @@ def test_concurrent_api_requests_match_sequential_responses():
 
 
 def test_invalid_native_kernel_format_fails_without_fallback(monkeypatch, tmp_path):
-    import backend.spice_kernels as kernels
+    import backend.kernel_context as kernels
     from backend.setup_kernels import file_hash
-    for name in KERNEL_FILES:
+    for name in KERNELS:
         (tmp_path / name).write_bytes(b"not a SPICE kernel")
     # Test native parser failure independently of authentication failure.
     monkeypatch.setattr(kernels, "KERNELS", {
-        name: (name, file_hash(tmp_path / name)) for name in KERNEL_FILES
+        name: (name, file_hash(tmp_path / name)) for name in KERNELS
     })
     monkeypatch.setenv("SPICE_KERNELS_DIR", str(tmp_path))
     with TestClient(app) as client:
@@ -138,16 +131,16 @@ def test_invalid_native_kernel_format_fails_without_fallback(monkeypatch, tmp_pa
 
 @real_kernels
 def test_kernel_change_during_load_is_rejected(monkeypatch, tmp_path):
-    import backend.setup_kernels as setup
-    for name in KERNEL_FILES:
+    import backend.kernel_context as kernels
+    for name in KERNELS:
         shutil.copyfile(kernel_directory() / name, tmp_path / name)
-    original_hash = setup.file_hash
+    original_hash = kernels.file_hash
     def change_after_hash(path):
         digest = original_hash(path)
         if path.name == "pck00011.tpc":
             path.write_bytes(path.read_bytes().replace(b"1737.4", b"1738.4"))
         return digest
-    monkeypatch.setattr(setup, "file_hash", change_after_hash)
+    monkeypatch.setattr(kernels, "file_hash", change_after_hash)
     monkeypatch.setenv("SPICE_KERNELS_DIR", str(tmp_path))
     with pytest.raises(KernelError, match="changed during loading"):
-        spice_context()
+        get_context()

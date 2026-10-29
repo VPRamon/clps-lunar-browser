@@ -1,4 +1,3 @@
-import os
 import stat
 from functools import lru_cache
 from pathlib import Path
@@ -6,11 +5,10 @@ from threading import RLock
 
 from siderust import SpiceContext
 
-from backend.setup_kernels import KERNELS
+from backend.setup_kernels import KERNELS, file_hash, kernel_directory
 
 
 _CONTEXT_LOCK = RLock()
-KERNEL_FILES = tuple(KERNELS)
 
 
 class KernelError(RuntimeError):
@@ -24,16 +22,8 @@ def _identity(path: Path) -> tuple:
     return metadata.st_size, metadata.st_mtime_ns, metadata.st_ctime_ns, metadata.st_ino
 
 
-def kernel_directory() -> Path:
-    configured = os.environ.get("SPICE_KERNELS_DIR")
-    if configured:
-        return Path(configured).expanduser().resolve()
-    return Path(__file__).resolve().parent / "kernels"
-
-
 @lru_cache(maxsize=1)
 def _context(directory: Path, identities: tuple) -> SpiceContext:
-    from backend.setup_kernels import file_hash
     try:
         for path, _ in identities:
             if file_hash(path) != KERNELS[path.name][1]:
@@ -46,12 +36,12 @@ def _context(directory: Path, identities: tuple) -> SpiceContext:
         raise KernelError(f"Could not load Siderust DE440 context: {exc}") from exc
 
 
-def spice_context() -> SpiceContext:
+def get_context() -> SpiceContext:
     # Serialize cold verification/construction; observations own immutable native state.
     with _CONTEXT_LOCK:
         directory = kernel_directory()
         identities = []
-        for filename in KERNEL_FILES:
+        for filename in KERNELS:
             path = directory / filename
             try:
                 identity = _identity(path)

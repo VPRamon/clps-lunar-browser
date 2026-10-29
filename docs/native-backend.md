@@ -12,7 +12,7 @@ explicit. No runtime engine selector or comparison framework is installed.
 `observe_sun` and `observe_earth`. Native `az_deg`, `alt_deg`, and `above_horizon`
 properties populate the existing JSON fields. Native ranges are kilometres;
 the API continues to omit ranges. The shared immutable context and its checksum
-verification live in `spice_kernels.py`; observers are inexpensive per-call owned
+verification live in `kernel_context.py`; observers are inexpensive per-call owned
 handles, with no observer cache. Window timestamps reuse the context.
 
 The pinned DE440s SPK, lunar binary PCK and FK use `MOON_ME`, east-positive

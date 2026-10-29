@@ -7,7 +7,7 @@ import pytest
 
 from backend.calculations.sun_earth import calculate_visibility, calculate_visibility_window
 from backend.mission_summary import summarize_window
-from backend.spice_kernels import KERNEL_FILES, kernel_directory
+from backend.setup_kernels import KERNELS, kernel_directory
 from backend.terrain.global_dem import RADIUS_M, build_global_profile, sample_height
 from backend.terrain.horizon import horizon_at
 
@@ -110,7 +110,7 @@ def test_randomized_summary_matches_independent_interval_integration():
             assert result["longest_"+name+"_minutes"] == pytest.approx(best/60, abs=1e-6)
 
 
-REAL_KERNELS = all((kernel_directory()/name).is_file() for name in KERNEL_FILES)
+REAL_KERNELS = all((kernel_directory()/name).is_file() for name in KERNELS)
 
 
 @pytest.mark.skipif(not REAL_KERNELS, reason="real NAIF kernels not installed")

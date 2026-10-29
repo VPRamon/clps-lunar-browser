@@ -5,7 +5,7 @@ import re
 from siderust import LunarObserver
 from tempoch import JulianDate
 
-from backend.spice_kernels import spice_context
+from backend.kernel_context import get_context
 
 
 # Authenticated pck00011.tpc has equal BODY301_RADII = 1737.4 km.
@@ -13,7 +13,7 @@ REFERENCE_RADIUS_M = 1737400.0
 MAX_WINDOW_SAMPLES = 2000
 
 
-class SpiceCalculationError(RuntimeError):
+class ObservationError(RuntimeError):
     pass
 
 
@@ -57,7 +57,7 @@ def calculate_visibility(latitude: float, longitude: float, utc_time: str,
     time = parse_utc_time(utc_time)
     output_time = time.isoformat().replace("+00:00", "Z")
 
-    context = spice_context()
+    context = get_context()
     try:
         observer = LunarObserver.from_spice(
             context=context, frame="MOON_ME", lon_deg=longitude, lat_deg=latitude,
@@ -73,7 +73,7 @@ def calculate_visibility(latitude: float, longitude: float, utc_time: str,
             )
         }
     except (ValueError, OSError) as exc:
-        raise SpiceCalculationError(f"Siderust could not calculate Sun/Earth position: {exc}") from exc
+        raise ObservationError(f"Siderust could not calculate Sun/Earth position: {exc}") from exc
 
     return {
         "site": None,
