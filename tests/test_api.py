@@ -3,12 +3,12 @@ from fastapi.testclient import TestClient
 
 from backend.app import app
 from backend.calculations.sun_earth import (
-    SpiceCalculationError,
+    ObservationError,
     calculate_visibility,
     parse_utc_time,
     validate_coordinates,
 )
-from backend.spice_kernels import KERNEL_FILES, kernel_directory
+from backend.setup_kernels import KERNELS, kernel_directory
 
 
 client = TestClient(app)
@@ -97,15 +97,15 @@ def test_input_helpers():
         validate_coordinates(91, 0)
 
 
-def test_spice_calculation_error_returns_bad_gateway(monkeypatch):
+def test_observation_error_returns_bad_gateway(monkeypatch):
     def fail_calculation(*_):
-        raise SpiceCalculationError("SPICE failed")
+        raise ObservationError("Observation failed")
 
     monkeypatch.setattr("backend.app.calculate_visibility", fail_calculation)
     response = client.get("/api/visibility?terrain=false&lat=0&lon=0&time=2026-10-03T18:00:00Z")
 
     assert response.status_code == 502
-    assert response.json()["detail"] == "SPICE failed"
+    assert response.json()["detail"] == "Observation failed"
 
 
 def test_visibility_window_response_shape(monkeypatch):
@@ -179,7 +179,7 @@ def test_named_site_visibility_returns_404_for_unknown_site():
     assert response.status_code == 404
 
 
-KERNELS_AVAILABLE = all((kernel_directory() / name).is_file() for name in KERNEL_FILES)
+KERNELS_AVAILABLE = all((kernel_directory() / name).is_file() for name in KERNELS)
 
 
 @pytest.mark.skipif(not KERNELS_AVAILABLE, reason="SPICE kernels not installed")

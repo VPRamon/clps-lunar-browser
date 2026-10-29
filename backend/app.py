@@ -5,12 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.calculations.sun_earth import (
-    SpiceCalculationError, calculate_visibility, calculate_visibility_window,
+    ObservationError, calculate_visibility, calculate_visibility_window,
     parse_utc_time, validate_window_request,
 )
 from backend.landing_sites import LandingSiteError, get_landing_site, load_landing_sites
 from backend.mission_summary import summarize_window
-from backend.spice_kernels import KernelError
+from backend.kernel_context import KernelError
 from backend.terrain.global_dem import global_dem, sample_height
 from backend.terrain.horizon import HorizonError, apply_horizon
 from backend.terrain.service import observer_radius, terrain_metadata, terrain_profile
@@ -32,8 +32,8 @@ async def unavailable(_request, exc):
     return JSONResponse(status_code=503, content={"detail": str(exc)})
 
 
-@app.exception_handler(SpiceCalculationError)
-async def spice_failure(_request, exc):
+@app.exception_handler(ObservationError)
+async def observation_failure(_request, exc):
     return JSONResponse(status_code=502, content={"detail": str(exc)})
 
 
@@ -97,7 +97,7 @@ def ready() -> dict:
         for site in load_landing_sites():
             terrain_profile(site["latitude"], site["longitude"], site)
         return {"ok": True}
-    except (KernelError, SpiceCalculationError, HorizonError, ValueError) as exc:
+    except (KernelError, ObservationError, HorizonError, ValueError) as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 

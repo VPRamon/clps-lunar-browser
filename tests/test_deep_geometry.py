@@ -5,30 +5,11 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 import pytest
 
-from backend.calculations.sun_earth import _local_angles, calculate_visibility, calculate_visibility_window
+from backend.calculations.sun_earth import calculate_visibility, calculate_visibility_window
 from backend.mission_summary import summarize_window
-from backend.spice_kernels import KERNEL_FILES, kernel_directory
+from backend.setup_kernels import KERNELS, kernel_directory
 from backend.terrain.global_dem import RADIUS_M, build_global_profile, sample_height
 from backend.terrain.horizon import horizon_at
-
-
-def test_local_angles_round_trip_for_random_vectors_and_cardinal_boundaries():
-    rng = np.random.default_rng(20261007)
-    cases = [(0., 0., 0., 0.), (90., 180., 359.999, -45.), (-90., -180., 90., 45.)]
-    cases += list(zip(rng.uniform(-90, 90, 1000), rng.uniform(-180, 180, 1000),
-                      rng.uniform(0, 360, 1000), rng.uniform(-89.9, 89.9, 1000)))
-    for latitude, longitude, azimuth, elevation in cases:
-        lat, lon, az, el = map(math.radians, (latitude, longitude, azimuth, elevation))
-        east = np.array([-math.sin(lon), math.cos(lon), 0])
-        north = np.array([-math.sin(lat)*math.cos(lon), -math.sin(lat)*math.sin(lon), math.cos(lat)])
-        up = np.cross(east, north)
-        vector = math.cos(el)*(math.sin(az)*east + math.cos(az)*north) + math.sin(el)*up
-        actual_az, actual_el = _local_angles(vector, latitude, longitude)
-        assert 0 <= actual_az < 360
-        assert abs((actual_az-azimuth+180) % 360-180) < 1e-8
-        assert actual_el == pytest.approx(elevation, abs=1e-8)
-    azimuth, _ = _local_angles(np.array([0., -1e-30, 1.]), 0, 0)
-    assert 0 <= azimuth < 360
 
 
 def test_horizon_periodicity_including_negative_subnormal_bearings():
@@ -129,7 +110,7 @@ def test_randomized_summary_matches_independent_interval_integration():
             assert result["longest_"+name+"_minutes"] == pytest.approx(best/60, abs=1e-6)
 
 
-REAL_KERNELS = all((kernel_directory()/name).is_file() for name in KERNEL_FILES)
+REAL_KERNELS = all((kernel_directory()/name).is_file() for name in KERNELS)
 
 
 @pytest.mark.skipif(not REAL_KERNELS, reason="real NAIF kernels not installed")

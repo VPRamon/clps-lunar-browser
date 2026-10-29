@@ -7,10 +7,15 @@ on:
   pull_request:
     branches:
       - main
+      - suhas/backend
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python: ["3.11", "3.14"]
 
     steps:
       - name: checkout
@@ -19,7 +24,7 @@ jobs:
       - name: set up python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
 
       - name: install dependencies
         run: |

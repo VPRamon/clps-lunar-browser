@@ -2,12 +2,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import app
-from backend.spice_kernels import KERNEL_FILES, kernel_directory
+from backend.setup_kernels import KERNELS, kernel_directory
 
 
 client = TestClient(app)
 WINDOW = {"start": "2026-10-15T00:00:00Z", "end": "2026-10-15T01:10:00Z", "step_minutes": 30}
-KERNELS_AVAILABLE = all((kernel_directory() / name).is_file() for name in KERNEL_FILES)
+KERNELS_AVAILABLE = all((kernel_directory() / name).is_file() for name in KERNELS)
 
 
 def test_browser_can_read_api_and_errors():

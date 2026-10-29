@@ -8,21 +8,21 @@ from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pytest
-import spiceypy
 import tifffile
 from fastapi.testclient import TestClient
 
 from backend.app import app
 from backend.calculations.sun_earth import calculate_visibility, validate_coordinates
 from backend.landing_sites import get_landing_site, load_landing_sites
-from backend.spice_kernels import KERNEL_FILES, KernelError, SPICE_LOCK, kernel_directory
+from backend.kernel_context import KernelError, get_context
+from backend.setup_kernels import KERNELS, kernel_directory
 from backend.terrain import global_dem as dem_module
 from backend.terrain.horizon import HorizonError, load_profile
 
 
 client = TestClient(app)
 TIME = "2026-10-03T00:00:00Z"
-REAL_KERNELS = all((kernel_directory()/name).is_file() for name in KERNEL_FILES)
+REAL_KERNELS = all((kernel_directory()/name).is_file() for name in KERNELS)
 
 
 @pytest.mark.parametrize("bad", [None, True, "0", 10 ** 1000, float("nan"), float("inf")],
@@ -125,16 +125,13 @@ def test_dem_disappearing_during_checksum_is_unavailable(monkeypatch, tmp_path):
 
 
 @pytest.mark.skipif(not REAL_KERNELS, reason="real NAIF kernels not installed")
-@pytest.mark.parametrize("reset", ["all", "pool", "one"])
-def test_kernel_calculations_recover_after_external_unload(reset):
+def test_context_reused_across_observations_and_windows():
+    from backend.calculations.sun_earth import calculate_visibility_window
+    context = get_context()
     original = calculate_visibility(20, 45, TIME)
-    with SPICE_LOCK:
-        if reset == "all":
-            spiceypy.kclear()
-        elif reset == "pool":
-            spiceypy.clpool()
-        else:
-            spiceypy.unload(str(kernel_directory()/"moon_de440_220930.tf"))
+    samples = calculate_visibility_window(20, 45, TIME, "2026-10-03T02:00:00Z")
+    assert get_context() is context
+    assert samples[0]["sun"] == original["sun"]
     assert calculate_visibility(20, 45, TIME) == original
 
 
@@ -143,16 +140,17 @@ def test_changed_but_parseable_kernel_is_rejected_and_repaired_copy_recovers(mon
     original_directory = kernel_directory()
     directory = tmp_path/"kernels"
     directory.mkdir()
-    for name in KERNEL_FILES:
+    for name in KERNELS:
         shutil.copyfile(original_directory/name, directory/name)
+    expected = calculate_visibility(0, 0, TIME)
+    monkeypatch.setenv("SPICE_KERNELS_DIR", str(directory))
+    assert calculate_visibility(0, 0, TIME) == expected
     pck = directory/"pck00011.tpc"
     original = pck.read_bytes()
     replacement = directory/"replacement"
     replacement.write_bytes(original.replace(b"1737.4", b"1738.4"))
     replacement.replace(pck)
     assert pck.read_bytes() != original
-    expected = calculate_visibility(0, 0, TIME)
-    monkeypatch.setenv("SPICE_KERNELS_DIR", str(directory))
     with pytest.raises(KernelError, match="checksum"):
         calculate_visibility(0, 0, TIME)
     replacement.write_bytes(original)

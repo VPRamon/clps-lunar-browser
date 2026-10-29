@@ -6,10 +6,10 @@ from backend.calculations.sun_earth import (
     calculate_visibility,
     calculate_visibility_window,
 )
-from backend.spice_kernels import KERNEL_FILES, kernel_directory
+from backend.setup_kernels import KERNELS, kernel_directory
 
 
-KERNELS_AVAILABLE = all((kernel_directory() / name).is_file() for name in KERNEL_FILES)
+KERNELS_AVAILABLE = all((kernel_directory() / name).is_file() for name in KERNELS)
 pytestmark = pytest.mark.skipif(
     not KERNELS_AVAILABLE,
     reason="download the SPICE kernels described in backend/kernels/README.md",

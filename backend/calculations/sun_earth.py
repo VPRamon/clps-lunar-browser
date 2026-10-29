@@ -1,18 +1,19 @@
 from datetime import datetime, timedelta, timezone
 import math
+import re
 
-import numpy as np
-import spiceypy
-from spiceypy.utils.exceptions import SpiceyError
+from siderust import LunarObserver
+from tempoch import JulianDate
 
-from backend.spice_kernels import SPICE_LOCK, load_spice_kernels
+from backend.kernel_context import get_context
 
 
-MOON_FRAME = "MOON_ME"
+# Authenticated pck00011.tpc has equal BODY301_RADII = 1737.4 km.
+REFERENCE_RADIUS_M = 1737400.0
 MAX_WINDOW_SAMPLES = 2000
 
 
-class SpiceCalculationError(RuntimeError):
+class ObservationError(RuntimeError):
     pass
 
 
@@ -29,44 +30,23 @@ def validate_coordinates(latitude: float, longitude: float) -> tuple[float, floa
 
 def parse_utc_time(value: str) -> datetime:
     try:
+        # Python 3.14 accepts 24:00; retain strict civil hours, including basic ISO.
+        if re.match(r"^(?:\d{4}-?\d{2}-?\d{2}|\d{4}-?W\d{2}(?:-?\d)?).24", value.strip()):
+            raise ValueError("hour must be below 24")
         parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
-    except (AttributeError, ValueError) as exc:
+    except (AttributeError, TypeError, ValueError) as exc:
         raise ValueError("time must be an ISO 8601 timestamp with a timezone") from exc
 
     if parsed.tzinfo is None:
         raise ValueError("time must include a timezone, for example 2026-10-03T18:00:00Z")
     try:
-        return parsed.astimezone(timezone.utc)
+        parsed = parsed.astimezone(timezone.utc)
     except (OverflowError, ValueError) as exc:
         raise ValueError("timestamp is outside the supported UTC datetime range") from exc
 
-
-def _local_angles(vector: np.ndarray, latitude: float, longitude: float) -> tuple[float, float]:
-    distance = float(np.linalg.norm(vector))
-    if not math.isfinite(distance) or distance == 0:
-        raise SpiceCalculationError("SPICE returned an invalid position vector")
-
-    lat = math.radians(latitude)
-    lon = math.radians(longitude)
-    direction = vector / distance
-
-    # Azimuth is measured clockwise from north in the local east/north/up basis.
-    east = np.array([-math.sin(lon), math.cos(lon), 0.0])
-    north = np.array(
-        [-math.sin(lat) * math.cos(lon), -math.sin(lat) * math.sin(lon), math.cos(lat)]
-    )
-    up = np.array(
-        [math.cos(lat) * math.cos(lon), math.cos(lat) * math.sin(lon), math.sin(lat)]
-    )
-
-    elevation = math.degrees(math.asin(float(np.clip(np.dot(direction, up), -1.0, 1.0))))
-    azimuth = math.degrees(
-        math.atan2(float(np.dot(direction, east)), float(np.dot(direction, north)))
-    ) % 360
-    # A tiny negative bearing can round up to 360 during modulo addition.
-    if azimuth >= 360:
-        azimuth = 0.0
-    return azimuth, elevation
+    if parsed.year < 1972:
+        raise ValueError("timestamp must be on or after 1972-01-01 UTC")
+    return parsed
 
 
 def calculate_visibility(latitude: float, longitude: float, utc_time: str,
@@ -77,49 +57,30 @@ def calculate_visibility(latitude: float, longitude: float, utc_time: str,
     time = parse_utc_time(utc_time)
     output_time = time.isoformat().replace("+00:00", "Z")
 
-    with SPICE_LOCK:
-        load_spice_kernels()
-        try:
-            et = spiceypy.utc2et(output_time)
-            _, radii = spiceypy.bodvrd("MOON", "RADII", 3)
-            equatorial_radius = float(radii[0])
-            flattening = (equatorial_radius - float(radii[2])) / equatorial_radius
-            if observer_radius_m is None:
-                site_fixed = spiceypy.georec(
-                    math.radians(longitude), math.radians(latitude), 0.0, equatorial_radius, flattening
-                )
-            else:
-                # LOLA latitudes are planetocentric; match its radial observer exactly.
-                lat, lon = math.radians(latitude), math.radians(longitude)
-                site_fixed = observer_radius_m / 1000 * np.array([
-                    math.cos(lat) * math.cos(lon), math.cos(lat) * math.sin(lon), math.sin(lat)
-                ])
-
-            # SPICE rotates the surface point between the lunar fixed frame and inertial J2000.
-            fixed_to_j2000 = spiceypy.pxform(MOON_FRAME, "J2000", et)
-            j2000_to_fixed = spiceypy.pxform("J2000", MOON_FRAME, et)
-            site_j2000 = fixed_to_j2000 @ site_fixed
-
-            bodies = {}
-            for name, target in (("sun", "SUN"), ("earth", "EARTH")):
-                moon_to_body, _ = spiceypy.spkpos(target, et, "J2000", "NONE", "MOON")
-                body_from_site_fixed = j2000_to_fixed @ (moon_to_body - site_j2000)
-                azimuth, elevation = _local_angles(body_from_site_fixed, latitude, longitude)
-                bodies[name] = {
-                    "azimuth": azimuth,
-                    "elevation": elevation,
-                    "visible": elevation > 0,
-                }
-        except SpiceyError as exc:
-            raise SpiceCalculationError(f"SPICE could not calculate the Sun/Earth position: {exc}") from exc
+    context = get_context()
+    try:
+        observer = LunarObserver.from_spice(
+            context=context, frame="MOON_ME", lon_deg=longitude, lat_deg=latitude,
+            radius_m=REFERENCE_RADIUS_M if observer_radius_m is None else observer_radius_m,
+        )
+        jd_tt = JulianDate.from_utc(output_time).value
+        bodies = {
+            name: {"azimuth": result.az_deg, "elevation": result.alt_deg,
+                   "visible": result.above_horizon}
+            for name, result in (
+                ("sun", observer.observe_sun(jd_tt=jd_tt)),
+                ("earth", observer.observe_earth(jd_tt=jd_tt)),
+            )
+        }
+    except (ValueError, OSError) as exc:
+        raise ObservationError(f"Siderust could not calculate Sun/Earth position: {exc}") from exc
 
     return {
         "site": None,
         "latitude": latitude,
         "longitude": longitude,
         "time": output_time,
-        "sun": bodies["sun"],
-        "earth": bodies["earth"],
+        **bodies,
     }
 
 
@@ -137,13 +98,7 @@ def calculate_visibility_window(
     current = start_time
     while current <= end_time:
         result = calculate_visibility(latitude, longitude, current.isoformat(), observer_radius_m)
-        samples.append(
-            {
-                "time": result["time"],
-                "sun": result["sun"],
-                "earth": result["earth"],
-            }
-        )
+        samples.append({key: result[key] for key in ("time", "sun", "earth")})
         if end_time - current < step:
             break
         current += step

@@ -182,10 +182,10 @@ def test_correct_shape_with_corrupt_content_fails_checksum(monkeypatch, tmp_path
         module.global_dem()
 
 
-from backend.spice_kernels import KERNEL_FILES, kernel_directory
+from backend.setup_kernels import KERNELS, kernel_directory
 from backend.terrain.global_dem import dem_path
 
-REAL_DATA = dem_path().is_file() and all((kernel_directory() / name).is_file() for name in KERNEL_FILES)
+REAL_DATA = dem_path().is_file() and all((kernel_directory() / name).is_file() for name in KERNELS)
 
 
 @pytest.mark.skipif(not REAL_DATA, reason="real SPICE kernels and global DEM not installed")
