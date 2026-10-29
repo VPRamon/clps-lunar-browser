@@ -295,14 +295,17 @@ on an otherwise idle machine and repeat before capacity decisions.
 
 ## Validation and operational robustness
 
-With the full verified DEM, both engine settings pass all **363 tests** on
+With the full verified DEM, both engine settings pass all **369 tests** on
 CPython 3.14.6 and on CPython 3.11.15 (the CI version). The dedicated native suite
 contains 167 passing cases. Both named-site demos and real Uvicorn smoke checks
 succeed. Warnings are dependency deprecations: one Starlette/httpx warning on
 3.14; 240 including Rasterio/Affine deprecations on 3.11. An isolated rerun of
 the unmodified base with complete data passes 195 tests and fails the one
 `24:00` parser regression on Python 3.14; this integration fixes that compatibility
-issue. Hosted CI status is recorded on the PR.
+issue. Hosted CI also caught an overbroad intermediate hour check that matched
+`:24` minutes; the final check is restricted to the hour after the date/time
+separator, with six independent regression cases. All four local full-suite runs
+were repeated after the correction. Hosted CI status is recorded on the PR.
 
 The first unmodified-base
 run while the DEM was downloading had 183 passing, 6 failing and 7 skipped tests:

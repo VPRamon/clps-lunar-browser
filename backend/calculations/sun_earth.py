@@ -32,7 +32,7 @@ def validate_coordinates(latitude: float, longitude: float) -> tuple[float, floa
 def parse_utc_time(value: str) -> datetime:
     try:
         # Python 3.14 accepts 24:00; retain the API's strict civil-hour contract.
-        if re.search(r"[^\d]24(?::|00)", value):
+        if re.search(r"[Tt ]24(?::|00)", value):
             raise ValueError("hour must be below 24")
         parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
     except (AttributeError, TypeError, ValueError) as exc:
